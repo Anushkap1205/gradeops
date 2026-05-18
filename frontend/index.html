@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GradeOps — TA Review</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4f;
+      --text: #e7ecf3;
+      --muted: #8b9cb3;
+      --accent: #3b82f6;
+      --success: #22c55e;
+      --warn: #f59e0b;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    h1 { margin: 0 0 0.75rem; font-size: 1.35rem; font-weight: 600; }
+    .summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .pill {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.875rem;
+    }
+    .pill strong { color: var(--text); }
+    main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .setup {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .setup label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.25rem; }
+    .setup input {
+      width: 100%;
+      max-width: 420px;
+      padding: 0.5rem 0.65rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+    .setup button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .q-title { font-size: 1.1rem; font-weight: 600; margin: 0; }
+    .badge {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    .badge.pending { background: #334155; color: #cbd5e1; }
+    .badge.approved { background: #14532d; color: #86efac; }
+    .badge.overridden { background: #713f12; color: #fcd34d; }
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+    .page-img {
+      width: 100%;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: #000;
+    }
+    .answer-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      min-height: 4rem;
+    }
+    .marks { font-size: 1.25rem; margin: 0.5rem 0; }
+    .marks span { color: var(--muted); font-size: 0.9rem; }
+    ul { margin: 0.35rem 0; padding-left: 1.25rem; }
+    li { margin: 0.25rem 0; color: var(--muted); }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+    }
+    .btn {
+      border: none;
+      border-radius: 6px;
+      padding: 0.45rem 0.9rem;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .btn-approve { background: var(--success); color: #052e16; }
+    .btn-save { background: var(--accent); color: #fff; }
+    .override input {
+      width: 72px;
+      padding: 0.4rem;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+    }
+    .error, .empty {
+      color: var(--danger);
+      padding: 1rem;
+    }
+    .loading { color: var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>GradeOps — TA Review</h1>
+    <div id="summary" class="summary">
+      <span class="pill">Total: <strong id="count-total">0</strong></span>
+      <span class="pill">Approved: <strong id="count-approved">0</strong></span>
+      <span class="pill">Overridden: <strong id="count-overridden">0</strong></span>
+      <span class="pill">Pending: <strong id="count-pending">0</strong></span>
+    </div>
+  </header>
+
+  <main>
+    <section class="setup">
+      <label for="submission-id">Submission ID</label>
+      <input id="submission-id" type="text" placeholder="uuid" />
+      <label for="file-id">File ID (from upload)</label>
+      <input id="file-id" type="text" placeholder="uuid folder name" />
+      <button type="button" id="load-btn">Load results</button>
+    </section>
+    <div id="status-msg" class="loading"></div>
+    <div id="questions"></div>
+  </main>
+
+  <script>
+    const API = window.location.origin;
+
+    function qs(name) {
+      return new URLSearchParams(window.location.search).get(name);
+    }
+
+    function initFromQuery() {
+      const sub = qs("submission_id");
+      const file = qs("file_id");
+      if (sub) document.getElementById("submission-id").value = sub;
+      if (file) document.getElementById("file-id").value = file;
+      if (sub) loadResults();
+    }
+
+    function updateSummary(items) {
+      const counts = { total: items.length, approved: 0, overridden: 0, pending: 0 };
+      items.forEach((q) => {
+        if (q.status === "approved") counts.approved++;
+        else if (q.status === "overridden") counts.overridden++;
+        else counts.pending++;
+      });
+      document.getElementById("count-total").textContent = counts.total;
+      document.getElementById("count-approved").textContent = counts.approved;
+      document.getElementById("count-overridden").textContent = counts.overridden;
+      document.getElementById("count-pending").textContent = counts.pending;
+    }
+
+    function renderList(items, fileId) {
+      const container = document.getElementById("questions");
+      if (!items.length) {
+        container.innerHTML = '<p class="empty">No evaluations yet. Run POST /evaluate first.</p>';
+        return;
+      }
+
+      container.innerHTML = items.map((q) => {
+        const page = q.page_number || 1;
+        const imgUrl = `${API}/files/${fileId}/page_${page}.png`;
+        const just = (q.justification || []).map((j) => `<li>${escapeHtml(j)}</li>`).join("");
+        const miss = (q.missing_points || []).map((m) => `<li>${escapeHtml(m)}</li>`).join("");
+
+        return `
+          <article class="card" data-question-id="${escapeHtml(q.question_id)}">
+            <div class="card-header">
+              <h2 class="q-title">${escapeHtml(q.question_id)}: ${escapeHtml(q.question_text)}</h2>
+              <span class="badge ${q.status}">${q.status}</span>
+            </div>
+            <div class="grid">
+              <div>
+                <img class="page-img" src="${imgUrl}" alt="Page ${page}" loading="lazy" />
+              </div>
+              <div>
+                <p><strong>Extracted answer</strong></p>
+                <div class="answer-box">${escapeHtml(q.answer_text || "—")}</div>
+                <p class="marks">AI: <strong>${q.ai_marks}</strong> / ${q.max_marks} &nbsp; Final: <strong class="final-marks">${q.final_marks}</strong></p>
+                <p><strong>Justification</strong></p>
+                <ul>${just || "<li>—</li>"}</ul>
+                <p><strong>Missing points</strong></p>
+                <ul>${miss || "<li>—</li>"}</ul>
+              </div>
+            </div>
+            <div class="actions">
+              <button type="button" class="btn btn-approve" data-action="approve">Approve (use AI marks)</button>
+              <label class="override">
+                Override marks:
+                <input type="number" min="0" max="${q.max_marks}" value="${q.final_marks}" class="override-input" />
+              </label>
+              <button type="button" class="btn btn-save" data-action="override">Save override</button>
+            </div>
+          </article>
+        `;
+      }).join("");
+
+      container.querySelectorAll("[data-action]").forEach((btn) => {
+        btn.addEventListener("click", onAction);
+      });
+    }
+
+    function escapeHtml(s) {
+      return String(s)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    async function putOverride(submissionId, questionId, finalMarks) {
+      const res = await fetch(`${API}/override`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          submission_id: submissionId,
+          question_id: questionId,
+          final_marks: finalMarks,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || res.statusText);
+      return data;
+    }
+
+    async function onAction(e) {
+      const card = e.target.closest(".card");
+      const questionId = card.dataset.questionId;
+      const submissionId = document.getElementById("submission-id").value.trim();
+      const action = e.target.dataset.action;
+
+      const item = window.__results.find((r) => r.question_id === questionId);
+      if (!item) return;
+
+      try {
+        let finalMarks;
+        if (action === "approve") {
+          finalMarks = item.ai_marks;
+        } else {
+          finalMarks = parseInt(card.querySelector(".override-input").value, 10);
+          if (Number.isNaN(finalMarks)) throw new Error("Invalid marks");
+        }
+        await putOverride(submissionId, questionId, finalMarks);
+        await loadResults();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function loadResults() {
+      const submissionId = document.getElementById("submission-id").value.trim();
+      const fileId = document.getElementById("file-id").value.trim();
+      const statusEl = document.getElementById("status-msg");
+
+      if (!submissionId) {
+        statusEl.textContent = "Enter a submission ID.";
+        return;
+      }
+
+      statusEl.textContent = "Loading…";
+      statusEl.className = "loading";
+
+      try {
+        const res = await fetch(`${API}/results/${submissionId}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || res.statusText);
+
+        window.__results = data;
+        updateSummary(data);
+        renderList(data, fileId);
+        statusEl.textContent = "";
+      } catch (err) {
+        statusEl.textContent = err.message;
+        statusEl.className = "error";
+        document.getElementById("questions").innerHTML = "";
+      }
+    }
+
+    document.getElementById("load-btn").addEventListener("click", loadResults);
+    initFromQuery();
+  </script>
+</body>
+</html>
