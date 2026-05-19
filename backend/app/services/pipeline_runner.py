@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def run_pipeline_background(submission_id: str) -> None:
-    """Background task entry: load DB session and invoke Person A's pipeline module."""
+    """Background task entry: load DB session and invoke AI Pipeline Engineer's pipeline module."""
     db = SessionLocal()
     try:
         submission = db.get(Submission, uuid.UUID(submission_id))
@@ -48,7 +48,7 @@ def run_pipeline_background(submission_id: str) -> None:
 
 
 def mark_submission_done(db: Session, submission_id: str) -> None:
-    """Helper for Person A to call when the graph finishes successfully."""
+    """Helper for AI Pipeline Engineer to call when the graph finishes successfully."""
     submission = db.get(Submission, uuid.UUID(submission_id))
     if submission:
         submission.status = SubmissionStatus.done

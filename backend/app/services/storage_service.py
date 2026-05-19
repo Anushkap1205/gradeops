@@ -12,7 +12,7 @@ from app.models.submission import Submission
 def save_extracted_answers(
     db: Session, submission_id: str, answers: dict[str, str]
 ) -> None:
-    """Persist OCR/extracted answers. Person A calls after OCR."""
+    """Persist OCR/extracted answers. AI Pipeline Engineer calls after OCR."""
     sub_uuid = uuid.UUID(submission_id)
     submission = db.get(Submission, sub_uuid)
     if not submission:
@@ -38,7 +38,7 @@ def save_extracted_answers(
 def save_evaluation(
     db: Session, submission_id: str, question_id: str, result: dict[str, Any]
 ) -> None:
-    """Persist AI grading result for one question. Person A calls per question."""
+    """Persist AI grading result for one question. AI Pipeline Engineer calls per question."""
     sub_uuid = uuid.UUID(submission_id)
     existing = (
         db.query(Evaluation)
