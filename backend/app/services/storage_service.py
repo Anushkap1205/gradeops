@@ -1,4 +1,3 @@
-import uuid
 from typing import Any
 
 from sqlalchemy.orm import Session
@@ -10,23 +9,22 @@ from app.models.submission import Submission
 
 
 def save_extracted_answers(
-    db: Session, submission_id: str, answers: dict[str, str]
+    db: Session, submission_id: int, answers: dict[str, str]
 ) -> None:
     """Persist OCR/extracted answers. AI Pipeline Engineer calls after OCR."""
-    sub_uuid = uuid.UUID(submission_id)
-    submission = db.get(Submission, sub_uuid)
+    submission = db.get(Submission, submission_id)
     if not submission:
         raise ValueError(f"Submission not found: {submission_id}")
 
     # Replace existing rows for this submission
     db.query(ExtractedAnswer).filter(
-        ExtractedAnswer.submission_id == sub_uuid
+        ExtractedAnswer.submission_id == submission_id
     ).delete()
 
     for question_id, answer_text in answers.items():
         db.add(
             ExtractedAnswer(
-                submission_id=sub_uuid,
+                submission_id=submission_id,
                 question_id=question_id,
                 answer_text=answer_text,
                 page_number=1,
@@ -36,14 +34,13 @@ def save_extracted_answers(
 
 
 def save_evaluation(
-    db: Session, submission_id: str, question_id: str, result: dict[str, Any]
+    db: Session, submission_id: int, question_id: str, result: dict[str, Any]
 ) -> None:
     """Persist AI grading result for one question. AI Pipeline Engineer calls per question."""
-    sub_uuid = uuid.UUID(submission_id)
     existing = (
         db.query(Evaluation)
         .filter(
-            Evaluation.submission_id == sub_uuid,
+            Evaluation.submission_id == submission_id,
             Evaluation.question_id == question_id,
         )
         .first()
@@ -62,7 +59,7 @@ def save_evaluation(
     else:
         db.add(
             Evaluation(
-                submission_id=sub_uuid,
+                submission_id=submission_id,
                 question_id=question_id,
                 ai_marks=ai_marks,
                 final_marks=ai_marks,
@@ -74,16 +71,15 @@ def save_evaluation(
     db.commit()
 
 
-def get_results(db: Session, submission_id: str) -> list[dict[str, Any]]:
+def get_results(db: Session, submission_id: int) -> list[dict[str, Any]]:
     """Return evaluations joined with rubric and extracted answer data."""
-    sub_uuid = uuid.UUID(submission_id)
-    submission = db.get(Submission, sub_uuid)
+    submission = db.get(Submission, submission_id)
     if not submission:
         raise ValueError(f"Submission not found: {submission_id}")
 
     evaluations = (
         db.query(Evaluation)
-        .filter(Evaluation.submission_id == sub_uuid)
+        .filter(Evaluation.submission_id == submission_id)
         .all()
     )
     rubrics = {
@@ -93,7 +89,7 @@ def get_results(db: Session, submission_id: str) -> list[dict[str, Any]]:
     answers = {
         a.question_id: a
         for a in db.query(ExtractedAnswer)
-        .filter(ExtractedAnswer.submission_id == sub_uuid)
+        .filter(ExtractedAnswer.submission_id == submission_id)
         .all()
     }
 

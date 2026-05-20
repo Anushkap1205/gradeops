@@ -1,11 +1,11 @@
-import uuid
-
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.security import get_current_user
 from app.models.exam import Exam
+from app.models.user import User, UserRole
 from app.models.rubric import Rubric
 from app.schemas.rubric import (
     RubricCreateRequest,
@@ -20,12 +20,15 @@ router = APIRouter(tags=["rubric"])
 def create_rubrics(
     body: RubricCreateRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    if current_user.role != UserRole.professor:
+        return JSONResponse(status_code=403, content={"error": "Only professors can create rubrics"})
     try:
         if not db.get(Exam, body.exam_id):
             return JSONResponse(status_code=400, content={"error": "Exam not found"})
 
-        created_ids: list[uuid.UUID] = []
+        created_ids: list[int] = []
         for item in body.rubrics:
             rubric = Rubric(
                 exam_id=body.exam_id,
@@ -46,7 +49,11 @@ def create_rubrics(
 
 
 @router.get("/rubric/{exam_id}")
-def get_rubrics(exam_id: uuid.UUID, db: Session = Depends(get_db)):
+def get_rubrics(
+    exam_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
     try:
         if not db.get(Exam, exam_id):
             return JSONResponse(status_code=404, content={"error": "Exam not found"})

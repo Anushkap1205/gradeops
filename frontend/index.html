@@ -162,6 +162,12 @@
 <body>
   <header>
     <h1>GradeOps — TA Review</h1>
+    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+      <input id="login-user" type="text" placeholder="Username (e.g. Jordan TA)" style="padding: 0.25rem;" />
+      <input id="login-pass" type="password" placeholder="Password (e.g. password123)" style="padding: 0.25rem;" />
+      <button id="login-btn">Login</button>
+      <span id="login-status" style="font-size: 0.8rem; margin-top: 0.25rem; color: var(--warn);">Not logged in</span>
+    </div>
     <div id="summary" class="summary">
       <span class="pill">Total: <strong id="count-total">0</strong></span>
       <span class="pill">Approved: <strong id="count-approved">0</strong></span>
@@ -171,6 +177,58 @@
   </header>
 
   <main>
+    <section class="setup" id="instructor-upload-section" style="margin-bottom: 2rem; border-color: var(--accent);">
+      <h2 style="margin-top: 0; font-size: 1.1rem;">Instructor: Bulk Upload Exams</h2>
+      <p style="font-size: 0.85rem; color: var(--muted); margin-top: -0.5rem; margin-bottom: 1rem;">Select multiple PDF scans at once. Only Instructors can perform this action.</p>
+      <form id="upload-form" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+        <div>
+          <label for="upload-exam-id">Exam ID</label>
+          <input id="upload-exam-id" type="number" required style="width: 100px; margin-bottom: 0;" />
+        </div>
+        <div>
+          <label for="upload-student-id">Student ID</label>
+          <input id="upload-student-id" type="number" required style="width: 100px; margin-bottom: 0;" />
+        </div>
+        <div>
+          <label for="upload-files">Select PDFs</label>
+          <input id="upload-files" type="file" multiple accept=".pdf,.png,.jpg,.jpeg" required style="margin-bottom: 0;" />
+        </div>
+        <button type="submit" id="upload-submit-btn" style="background: var(--success);">Upload Scans</button>
+      </form>
+      <div id="upload-status" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+    </section>
+
+    <section class="setup" id="instructor-rubric-section" style="margin-bottom: 2rem; border-color: var(--accent);">
+      <h2 style="margin-top: 0; font-size: 1.1rem;">Instructor: Define Rubric</h2>
+      <p style="font-size: 0.85rem; color: var(--muted); margin-top: -0.5rem; margin-bottom: 1rem;">Set up the grading rules for a specific question.</p>
+      <form id="rubric-form" style="display: flex; flex-direction: column; gap: 1rem;">
+        <div style="display: flex; gap: 1rem;">
+          <div>
+            <label for="rubric-exam-id">Exam ID</label>
+            <input id="rubric-exam-id" type="number" required style="width: 100px; margin-bottom: 0;" />
+          </div>
+          <div>
+            <label for="rubric-q-id">Question ID (e.g. Q1)</label>
+            <input id="rubric-q-id" type="text" required style="width: 150px; margin-bottom: 0;" />
+          </div>
+          <div>
+            <label for="rubric-marks">Max Marks</label>
+            <input id="rubric-marks" type="number" required style="width: 100px; margin-bottom: 0;" />
+          </div>
+        </div>
+        <div>
+          <label for="rubric-text">Question Text</label>
+          <input id="rubric-text" type="text" required style="max-width: 100%; margin-bottom: 0;" />
+        </div>
+        <div>
+          <label for="rubric-points">Key Points (comma separated)</label>
+          <input id="rubric-points" type="text" placeholder="Mentions gravity, shows formula, correct units" required style="max-width: 100%; margin-bottom: 0;" />
+        </div>
+        <button type="submit" id="rubric-submit-btn" style="background: var(--success); width: max-content;">Save Rubric</button>
+      </form>
+      <div id="rubric-status" style="margin-top: 1rem; font-size: 0.9rem;"></div>
+    </section>
+
     <section class="setup">
       <label for="submission-id">Submission ID</label>
       <input id="submission-id" type="text" placeholder="uuid" />
@@ -184,6 +242,121 @@
 
   <script>
     const API = window.location.origin;
+    let token = null;
+
+    document.getElementById("login-btn").addEventListener("click", async () => {
+      const u = document.getElementById("login-user").value;
+      const p = document.getElementById("login-pass").value;
+      const formData = new URLSearchParams();
+      formData.append("username", u);
+      formData.append("password", p);
+      
+      const res = await fetch(`${API}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData
+      });
+      if (res.ok) {
+        const data = await res.json();
+        token = data.access_token;
+        document.getElementById("login-status").textContent = "Logged in!";
+        document.getElementById("login-status").style.color = "var(--success)";
+      } else {
+        document.getElementById("login-status").textContent = "Login failed!";
+      }
+    });
+
+    document.getElementById("upload-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const statusEl = document.getElementById("upload-status");
+      if (!token) {
+        statusEl.textContent = "Please login as an Instructor first!";
+        statusEl.style.color = "var(--danger)";
+        return;
+      }
+      
+      const examId = document.getElementById("upload-exam-id").value;
+      const studentId = document.getElementById("upload-student-id").value;
+      const fileInput = document.getElementById("upload-files");
+      
+      if (!fileInput.files.length) return;
+
+      const formData = new FormData();
+      formData.append("exam_id", examId);
+      formData.append("student_id", studentId);
+      for (let i = 0; i < fileInput.files.length; i++) {
+        formData.append("files", fileInput.files[i]);
+      }
+
+      statusEl.textContent = "Uploading and processing in background...";
+      statusEl.style.color = "var(--accent)";
+      document.getElementById("upload-submit-btn").disabled = true;
+
+      try {
+        const res = await fetch(`${API}/upload`, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${token}` },
+          body: formData
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Upload failed");
+        
+        statusEl.textContent = `Successfully uploaded ${data.uploads.length} files! Background processing started.`;
+        statusEl.style.color = "var(--success)";
+        fileInput.value = "";
+      } catch (err) {
+        statusEl.textContent = err.message;
+        statusEl.style.color = "var(--danger)";
+      } finally {
+        document.getElementById("upload-submit-btn").disabled = false;
+      }
+    });
+
+    document.getElementById("rubric-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const statusEl = document.getElementById("rubric-status");
+      if (!token) {
+        statusEl.textContent = "Please login as an Instructor first!";
+        statusEl.style.color = "var(--danger)";
+        return;
+      }
+      
+      const examId = document.getElementById("rubric-exam-id").value;
+      const qId = document.getElementById("rubric-q-id").value;
+      const marks = parseInt(document.getElementById("rubric-marks").value);
+      const text = document.getElementById("rubric-text").value;
+      const points = document.getElementById("rubric-points").value.split(",").map(s => s.trim());
+      
+      statusEl.textContent = "Saving rubric...";
+      statusEl.style.color = "var(--accent)";
+
+      try {
+        const res = await fetch(`${API}/rubric`, {
+          method: "POST",
+          headers: { 
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            exam_id: parseInt(examId),
+            rubrics: [{
+              question_id: qId,
+              question_text: text,
+              max_marks: marks,
+              key_points: points
+            }]
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Failed to save rubric");
+        
+        statusEl.textContent = `Successfully saved rubric rules for ${qId}!`;
+        statusEl.style.color = "var(--success)";
+      } catch (err) {
+        statusEl.textContent = err.message;
+        statusEl.style.color = "var(--danger)";
+      }
+    });
 
     function qs(name) {
       return new URLSearchParams(window.location.search).get(name);
@@ -269,9 +442,13 @@
     }
 
     async function putOverride(submissionId, questionId, finalMarks) {
+      if (!token) return alert("Please login first");
       const res = await fetch(`${API}/override`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` 
+        },
         body: JSON.stringify({
           submission_id: submissionId,
           question_id: questionId,
@@ -321,7 +498,10 @@
       statusEl.className = "loading";
 
       try {
-        const res = await fetch(`${API}/results/${submissionId}`);
+        if (!token) throw new Error("Please login first");
+        const res = await fetch(`${API}/results/${submissionId}`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || res.statusText);
 

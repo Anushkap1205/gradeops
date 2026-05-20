@@ -31,27 +31,27 @@ def upgrade() -> None:
 
     op.create_table(
         "users",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
         sa.Column("name", sa.String(255), nullable=False),
         sa.Column("role", user_role, nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.text("CURRENT_TIMESTAMP"),
             nullable=False,
         ),
     )
 
     op.create_table(
         "exams",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
+        sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
         sa.Column("title", sa.String(255), nullable=False),
         sa.Column("course", sa.String(255), nullable=False),
-        sa.Column("created_by", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("created_by", sa.Integer(), nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.text("CURRENT_TIMESTAMP"),
             nullable=False,
         ),
         sa.ForeignKeyConstraint(["created_by"], ["users.id"]),
@@ -59,15 +59,15 @@ def upgrade() -> None:
 
     op.create_table(
         "submissions",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("student_id", postgresql.UUID(as_uuid=True), nullable=False),
-        sa.Column("exam_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
+        sa.Column("student_id", sa.Integer(), nullable=False),
+        sa.Column("exam_id", sa.Integer(), nullable=False),
         sa.Column("file_path", sa.String(512), nullable=False),
         sa.Column("status", submission_status, nullable=False),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.text("CURRENT_TIMESTAMP"),
             nullable=False,
         ),
         sa.ForeignKeyConstraint(["student_id"], ["users.id"]),
@@ -76,19 +76,19 @@ def upgrade() -> None:
 
     op.create_table(
         "rubrics",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("exam_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
+        sa.Column("exam_id", sa.Integer(), nullable=False),
         sa.Column("question_id", sa.String(64), nullable=False),
         sa.Column("question_text", sa.Text(), nullable=False),
         sa.Column("max_marks", sa.Integer(), nullable=False),
-        sa.Column("key_points", postgresql.JSONB(), nullable=False),
+        sa.Column("key_points", sa.JSON(), nullable=False),
         sa.ForeignKeyConstraint(["exam_id"], ["exams.id"]),
     )
 
     op.create_table(
         "extracted_answers",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("submission_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
+        sa.Column("submission_id", sa.Integer(), nullable=False),
         sa.Column("question_id", sa.String(64), nullable=False),
         sa.Column("answer_text", sa.Text(), nullable=False),
         sa.Column("page_number", sa.Integer(), nullable=False),
@@ -97,20 +97,20 @@ def upgrade() -> None:
 
     op.create_table(
         "evaluations",
-        sa.Column("id", postgresql.UUID(as_uuid=True), primary_key=True),
-        sa.Column("submission_id", postgresql.UUID(as_uuid=True), nullable=False),
+        sa.Column("id", sa.Integer(), primary_key=True, autoincrement=True),
+        sa.Column("submission_id", sa.Integer(), nullable=False),
         sa.Column("question_id", sa.String(64), nullable=False),
         sa.Column("ai_marks", sa.Integer(), nullable=False),
         sa.Column("final_marks", sa.Integer(), nullable=False),
-        sa.Column("justification", postgresql.JSONB(), nullable=False),
-        sa.Column("missing_points", postgresql.JSONB(), nullable=False),
+        sa.Column("justification", sa.JSON(), nullable=False),
+        sa.Column("missing_points", sa.JSON(), nullable=False),
         sa.Column("status", evaluation_status, nullable=False),
-        sa.Column("override_by", postgresql.UUID(as_uuid=True), nullable=True),
+        sa.Column("override_by", sa.Integer(), nullable=True),
         sa.Column("override_at", sa.DateTime(timezone=True), nullable=True),
         sa.Column(
             "created_at",
             sa.DateTime(timezone=True),
-            server_default=sa.text("now()"),
+            server_default=sa.text("CURRENT_TIMESTAMP"),
             nullable=False,
         ),
         sa.ForeignKeyConstraint(["submission_id"], ["submissions.id"]),

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import evaluate, rubric, upload
+from app.api import evaluate, rubric, upload, auth, plagiarism
 from app.core.config import settings
 from app.utils.errors import json_exception_handler
 from app.utils.files import page_image_path
@@ -27,6 +27,8 @@ app.add_exception_handler(Exception, json_exception_handler)
 app.include_router(upload.router)
 app.include_router(rubric.router)
 app.include_router(evaluate.router)
+app.include_router(auth.router)
+app.include_router(plagiarism.router)
 
 settings.uploads_dir.mkdir(parents=True, exist_ok=True)
 settings.outputs_dir.mkdir(parents=True, exist_ok=True)

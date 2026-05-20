@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime
 
 from pydantic import BaseModel, Field
@@ -24,15 +23,15 @@ class ResultItem(BaseModel):
 
 
 class OverrideRequest(BaseModel):
-    submission_id: uuid.UUID
+    submission_id: int
     question_id: str
     final_marks: int = Field(ge=0)
     edited_justification: list[str] | None = None
-    override_by: uuid.UUID | None = None
+    override_by: int | None = None
 
 
 class OverrideResponse(BaseModel):
-    submission_id: uuid.UUID
+    submission_id: int
     question_id: str
     final_marks: int
     status: EvaluationStatus

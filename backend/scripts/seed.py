@@ -1,12 +1,12 @@
 """Seed minimal users and an exam for local testing. Run from backend/: python scripts/seed.py"""
 
 import sys
-import uuid
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from app.core.database import SessionLocal
+from app.core.security import get_password_hash
 from app.models.exam import Exam
 from app.models.user import User, UserRole
 
@@ -14,9 +14,10 @@ from app.models.user import User, UserRole
 def main() -> None:
     db = SessionLocal()
     try:
-        professor = User(name="Dr. Smith", role=UserRole.professor)
-        student = User(name="Alex Student", role=UserRole.student)
-        ta = User(name="Jordan TA", role=UserRole.ta)
+        pw = get_password_hash("password123")
+        professor = User(name="Dr. Smith", role=UserRole.professor, hashed_password=pw)
+        student = User(name="Alex Student", role=UserRole.student, hashed_password=pw)
+        ta = User(name="Jordan TA", role=UserRole.ta, hashed_password=pw)
         db.add_all([professor, student, ta])
         db.flush()
 
@@ -33,6 +34,7 @@ def main() -> None:
         print(f"  student_id={student.id}")
         print(f"  ta_id={ta.id}")
         print(f"  exam_id={exam.id}")
+        print(f"  Passwords for all users: 'password123'")
     finally:
         db.close()
 

@@ -1,12 +1,13 @@
-import uuid
-
 from pydantic import BaseModel
 
 from app.models.submission import SubmissionStatus
 
 
-class UploadResponse(BaseModel):
+class UploadItemResponse(BaseModel):
     file_id: str
-    submission_id: uuid.UUID
+    submission_id: int
     pages: int
     status: SubmissionStatus
+
+class BulkUploadResponse(BaseModel):
+    uploads: list[UploadItemResponse]

@@ -1,6 +1,5 @@
 import importlib
 import logging
-import uuid
 
 from sqlalchemy.orm import Session
 
@@ -11,11 +10,11 @@ from app.models.submission import Submission, SubmissionStatus
 logger = logging.getLogger(__name__)
 
 
-def run_pipeline_background(submission_id: str) -> None:
+def run_pipeline_background(submission_id: int) -> None:
     """Background task entry: load DB session and invoke AI Pipeline Engineer's pipeline module."""
     db = SessionLocal()
     try:
-        submission = db.get(Submission, uuid.UUID(submission_id))
+        submission = db.get(Submission, submission_id)
         if not submission:
             logger.error("Submission %s not found for pipeline", submission_id)
             return
@@ -32,14 +31,14 @@ def run_pipeline_background(submission_id: str) -> None:
 
         run_fn(db, submission_id)
 
-        submission = db.get(Submission, uuid.UUID(submission_id))
+        submission = db.get(Submission, submission_id)
         if submission and submission.status == SubmissionStatus.processing:
             submission.status = SubmissionStatus.done
             db.commit()
     except Exception:
         logger.exception("Grading pipeline failed for submission %s", submission_id)
         db.rollback()
-        submission = db.get(Submission, uuid.UUID(submission_id))
+        submission = db.get(Submission, submission_id)
         if submission:
             submission.status = SubmissionStatus.uploaded
             db.commit()
@@ -47,9 +46,9 @@ def run_pipeline_background(submission_id: str) -> None:
         db.close()
 
 
-def mark_submission_done(db: Session, submission_id: str) -> None:
+def mark_submission_done(db: Session, submission_id: int) -> None:
     """Helper for AI Pipeline Engineer to call when the graph finishes successfully."""
-    submission = db.get(Submission, uuid.UUID(submission_id))
+    submission = db.get(Submission, submission_id)
     if submission:
         submission.status = SubmissionStatus.done
         db.commit()

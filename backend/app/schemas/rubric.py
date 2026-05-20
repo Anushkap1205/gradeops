@@ -1,5 +1,3 @@
-import uuid
-
 from pydantic import BaseModel, Field
 
 
@@ -11,13 +9,13 @@ class RubricItemCreate(BaseModel):
 
 
 class RubricCreateRequest(BaseModel):
-    exam_id: uuid.UUID
+    exam_id: int
     rubrics: list[RubricItemCreate]
 
 
 class RubricResponse(BaseModel):
-    id: uuid.UUID
-    exam_id: uuid.UUID
+    id: int
+    exam_id: int
     question_id: str
     question_text: str
     max_marks: int
@@ -27,4 +25,4 @@ class RubricResponse(BaseModel):
 
 
 class RubricCreateResponse(BaseModel):
-    rubric_ids: list[uuid.UUID]
+    rubric_ids: list[int]

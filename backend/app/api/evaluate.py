@@ -1,4 +1,3 @@
-import uuid
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, Depends
@@ -8,6 +7,8 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.models.evaluation import Evaluation, EvaluationStatus
 from app.models.submission import Submission
+from app.models.user import User, UserRole
+from app.core.security import get_current_user
 from app.schemas.evaluate import (
     EvaluateResponse,
     OverrideRequest,
@@ -22,10 +23,13 @@ router = APIRouter(tags=["evaluate"])
 
 @router.post("/evaluate/{submission_id}")
 def trigger_evaluation(
-    submission_id: uuid.UUID,
+    submission_id: int,
     background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    if current_user.role not in [UserRole.professor, UserRole.ta]:
+        return JSONResponse(status_code=403, content={"error": "Unauthorized"})
     try:
         submission = db.get(Submission, submission_id)
         if not submission:
@@ -33,7 +37,7 @@ def trigger_evaluation(
                 status_code=404, content={"error": "Submission not found"}
             )
 
-        background_tasks.add_task(run_pipeline_background, str(submission_id))
+        background_tasks.add_task(run_pipeline_background, submission_id)
         return EvaluateResponse(status="processing")
     except Exception as exc:
         return JSONResponse(status_code=500, content={"error": str(exc)})
@@ -41,9 +45,12 @@ def trigger_evaluation(
 
 @router.get("/results/{submission_id}")
 def get_submission_results(
-    submission_id: uuid.UUID,
+    submission_id: int,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    if current_user.role not in [UserRole.professor, UserRole.ta]:
+        return JSONResponse(status_code=403, content={"error": "Unauthorized"})
     try:
         submission = db.get(Submission, submission_id)
         if not submission:
@@ -63,7 +70,10 @@ def get_submission_results(
 def override_evaluation(
     body: OverrideRequest,
     db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
 ):
+    if current_user.role not in [UserRole.professor, UserRole.ta]:
+        return JSONResponse(status_code=403, content={"error": "Unauthorized"})
     try:
         evaluation = (
             db.query(Evaluation)

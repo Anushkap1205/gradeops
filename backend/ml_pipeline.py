@@ -13,11 +13,9 @@ from app.services.pipeline_runner import mark_submission_done
 logger = logging.getLogger(__name__)
 
 
-def run_grading_pipeline(db, submission_id: str) -> None:
+def run_grading_pipeline(db, submission_id: int) -> None:
     from app.models.submission import Submission
-    import uuid
-
-    submission = db.get(Submission, uuid.UUID(submission_id))
+    submission = db.get(Submission, submission_id)
     if not submission:
         raise ValueError(f"Submission {submission_id} not found")
 
