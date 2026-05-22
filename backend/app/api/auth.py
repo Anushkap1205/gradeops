@@ -17,8 +17,10 @@ def login_access_token(
     OAuth2 compatible token login, get an access token for future requests.
     Expects username and password. We match username to User.name for simplicity.
     """
+    print(f"Login attempt: username='{form_data.username}', password='{form_data.password}'")
     user = db.query(User).filter(User.name == form_data.username).first()
     if not user or not user.hashed_password:
+        print(f"User not found for '{form_data.username}'")
         raise HTTPException(status_code=400, detail="Incorrect email or password")
     if not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Incorrect email or password")

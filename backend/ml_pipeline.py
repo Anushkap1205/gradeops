@@ -2,9 +2,7 @@ import logging
 import sys
 import os
 
-PERSON_A_PATH = os.path.expanduser("~/Desktop/gradeops-ai")
-if PERSON_A_PATH not in sys.path:
-    sys.path.append(PERSON_A_PATH)
+
 
 import requests
 from app.services.storage_service import save_extracted_answers, save_evaluation
@@ -23,22 +21,23 @@ def run_grading_pipeline(db, submission_id: int) -> None:
     file_path = submission.file_path
     file_id = file_path.split("/")[1] if "/" in file_path else file_path
 
-    outputs_dir = os.path.expanduser(f"~/Desktop/gradeops/backend/outputs/{file_id}")
-    image_path = os.path.join(outputs_dir, "page_1.png")
+    from app.core.config import settings
+    outputs_dir = settings.outputs_dir / file_id
+    image_path = str(outputs_dir / "page_1.png")
 
     if not os.path.exists(image_path):
         raise FileNotFoundError(f"Page image not found: {image_path}")
 
-    rubric_response = requests.get(f"http://localhost:8000/rubric/{exam_id}")
-    rubric_list = rubric_response.json()
+    from app.models.rubric import Rubric
+    rubric_list = db.query(Rubric).filter(Rubric.exam_id == submission.exam_id).all()
 
     rubric_data = {}
     rubric_max_marks = {}
     for rubric in rubric_list:
-        qid = rubric["question_id"]
-        criteria = " ".join(rubric.get("key_points", []))
-        rubric_data[qid] = {"criteria": criteria, "max_score": rubric["max_marks"]}
-        rubric_max_marks[qid] = rubric["max_marks"]
+        qid = rubric.question_id
+        criteria = " ".join(rubric.key_points or [])
+        rubric_data[qid] = {"criteria": criteria, "max_score": rubric.max_marks}
+        rubric_max_marks[qid] = rubric.max_marks
 
     from gradeops_ai.graph.workflow import build_workflow
     workflow = build_workflow()
