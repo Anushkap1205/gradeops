@@ -234,7 +234,10 @@
       <input id="submission-id" type="text" placeholder="uuid" />
       <label for="file-id">File ID (from upload)</label>
       <input id="file-id" type="text" placeholder="uuid folder name" />
-      <button type="button" id="load-btn">Load results</button>
+      <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+        <button type="button" id="eval-btn" style="background: var(--warn); color: #000;">1. Run Evaluation</button>
+        <button type="button" id="load-btn">2. Load results</button>
+      </div>
     </section>
     <div id="status-msg" class="loading"></div>
     <div id="questions"></div>
@@ -301,7 +304,14 @@
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Upload failed");
         
-        statusEl.textContent = `Successfully uploaded ${data.uploads.length} files! Background processing started.`;
+        if (data.uploads && data.uploads.length > 0) {
+          const u = data.uploads[0];
+          statusEl.innerHTML = `Successfully uploaded! Background processing started.<br/><strong>Submission ID:</strong> ${u.submission_id}<br/><strong>File ID:</strong> ${u.file_id}`;
+          document.getElementById("submission-id").value = u.submission_id;
+          document.getElementById("file-id").value = u.file_id;
+        } else {
+          statusEl.textContent = `Successfully uploaded ${data.uploads.length} files! Background processing started.`;
+        }
         statusEl.style.color = "var(--success)";
         fileInput.value = "";
       } catch (err) {
@@ -515,6 +525,31 @@
         document.getElementById("questions").innerHTML = "";
       }
     }
+
+    document.getElementById("eval-btn").addEventListener("click", async () => {
+      const submissionId = document.getElementById("submission-id").value.trim();
+      const statusEl = document.getElementById("status-msg");
+      if (!submissionId) return alert("Enter a submission ID");
+      if (!token) return alert("Please login first");
+
+      statusEl.textContent = "Starting evaluation in background...";
+      statusEl.className = "loading";
+
+      try {
+        const res = await fetch(`${API}/evaluate/${submissionId}`, {
+          method: "POST",
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Eval failed");
+
+        statusEl.textContent = "Evaluation started! Wait a few seconds, then click 'Load results'.";
+        statusEl.style.color = "var(--success)";
+      } catch (err) {
+        statusEl.textContent = err.message;
+        statusEl.className = "error";
+      }
+    });
 
     document.getElementById("load-btn").addEventListener("click", loadResults);
     initFromQuery();

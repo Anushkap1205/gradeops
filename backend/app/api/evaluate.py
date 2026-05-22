@@ -58,7 +58,7 @@ def get_submission_results(
                 status_code=404, content={"error": "Submission not found"}
             )
 
-        rows = storage_service.get_results(db, str(submission_id))
+        rows = storage_service.get_results(db, submission_id)
         return [ResultItem(**row) for row in rows]
     except ValueError as exc:
         return JSONResponse(status_code=404, content={"error": str(exc)})

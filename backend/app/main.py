@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.api import evaluate, rubric, upload, auth, plagiarism
+from app.api import evaluate, rubric, upload, auth, plagiarism, review
 from app.core.config import settings
 from app.utils.errors import json_exception_handler
 from app.utils.files import page_image_path
@@ -29,6 +29,7 @@ app.include_router(rubric.router)
 app.include_router(evaluate.router)
 app.include_router(auth.router)
 app.include_router(plagiarism.router)
+app.include_router(review.router)
 
 settings.uploads_dir.mkdir(parents=True, exist_ok=True)
 settings.outputs_dir.mkdir(parents=True, exist_ok=True)
@@ -38,11 +39,19 @@ if FRONTEND_DIR.exists():
 
 
 @app.get("/")
-def review_ui():
+def root_ui():
     index = FRONTEND_DIR / "index.html"
     if index.exists():
         return FileResponse(index)
     return JSONResponse(content={"message": "GradeOps API"})
+
+
+@app.get("/review")
+def review_dashboard():
+    page = FRONTEND_DIR / "review.html"
+    if page.exists():
+        return FileResponse(page)
+    return JSONResponse(status_code=404, content={"error": "review.html not found"})
 
 
 @app.get("/files/{file_id}/page_{page_number}.png")
