@@ -4,159 +4,205 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GradeOps — TA Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #0f1419;
-      --surface: #1a2332;
-      --border: #2d3a4f;
-      --text: #e7ecf3;
-      --muted: #8b9cb3;
+      --bg: #09090b;
+      --surface: rgba(26, 26, 30, 0.65);
+      --surface-hover: rgba(39, 39, 42, 0.8);
+      --border: rgba(63, 63, 70, 0.4);
+      --border-active: #3b82f6;
+      --text: #f4f4f5;
+      --muted: #a1a1aa;
       --accent: #3b82f6;
-      --success: #22c55e;
+      --accent-hover: #2563eb;
+      --success: #10b981;
+      --success-hover: #059669;
       --warn: #f59e0b;
       --danger: #ef4444;
+      --glow: rgba(59, 130, 246, 0.3);
     }
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Segoe UI", system-ui, sans-serif;
+      font-family: "Inter", system-ui, sans-serif;
       background: var(--bg);
+      background-image: radial-gradient(circle at top right, rgba(59,130,246,0.1) 0%, transparent 40%),
+                        radial-gradient(circle at bottom left, rgba(16,185,129,0.05) 0%, transparent 40%);
+      background-attachment: fixed;
       color: var(--text);
-      line-height: 1.5;
+      line-height: 1.6;
     }
     header {
-      background: var(--surface);
+      background: rgba(9, 9, 11, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
-      padding: 1rem 1.5rem;
+      padding: 1.25rem 2rem;
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
-    h1 { margin: 0 0 0.75rem; font-size: 1.35rem; font-weight: 600; }
-    .summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-    }
+    h1 { margin: 0 0 1rem; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.02em; background: linear-gradient(135deg, #fff, #a1a1aa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .summary { display: flex; flex-wrap: wrap; gap: 0.75rem; }
     .pill {
-      background: var(--bg);
+      background: rgba(255, 255, 255, 0.05);
       border: 1px solid var(--border);
       border-radius: 999px;
-      padding: 0.35rem 0.85rem;
+      padding: 0.4rem 1rem;
       font-size: 0.875rem;
+      font-weight: 500;
+      backdrop-filter: blur(4px);
     }
-    .pill strong { color: var(--text); }
-    main { max-width: 1100px; margin: 0 auto; padding: 1.5rem; }
+    .pill strong { color: #fff; font-weight: 600; }
+    main { max-width: 1200px; margin: 0 auto; padding: 2rem; }
     .setup {
       background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .setup label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.25rem; }
-    .setup input {
-      width: 100%;
-      max-width: 420px;
-      padding: 0.5rem 0.65rem;
-      border-radius: 6px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      margin-bottom: 0.75rem;
-    }
-    .setup button {
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 0.5rem 1rem;
-      cursor: pointer;
-      font-weight: 500;
-    }
-    .card {
-      background: var(--surface);
+      backdrop-filter: blur(8px);
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 1.25rem;
-      margin-bottom: 1.25rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    .setup h2 { margin-top: 0; font-size: 1.15rem; font-weight: 600; margin-bottom: 0.25rem; }
+    .setup p { font-size: 0.85rem; color: var(--muted); margin-top: 0; margin-bottom: 1.25rem; }
+    .setup label { display: block; font-size: 0.8rem; font-weight: 500; color: var(--muted); margin-bottom: 0.35rem; }
+    .setup input {
+      width: 100%;
+      max-width: 420px;
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: rgba(0,0,0,0.2);
+      color: var(--text);
+      font-family: inherit;
+      transition: all 0.2s ease;
+    }
+    .setup input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    .btn, .setup button {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.6rem 1.2rem;
+      cursor: pointer;
+      font-weight: 600;
+      font-family: inherit;
+      transition: all 0.2s ease;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .btn:hover, .setup button:hover { transform: translateY(-1px); box-shadow: 0 4px 6px rgba(0,0,0,0.15); background: var(--accent-hover); }
+    .btn:active, .setup button:active { transform: translateY(0); }
+    .card {
+      background: var(--surface);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    .card.active {
+      border-color: var(--border-active);
+      box-shadow: 0 0 0 1px var(--border-active), 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 0 20px var(--glow);
+      transform: scale(1.01);
+      background: rgba(30, 35, 45, 0.85);
     }
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
       gap: 1rem;
-      margin-bottom: 1rem;
+      margin-bottom: 1.25rem;
     }
-    .q-title { font-size: 1.1rem; font-weight: 600; margin: 0; }
+    .q-title { font-size: 1.25rem; font-weight: 600; margin: 0; color: #fff; }
     .badge {
       font-size: 0.75rem;
       text-transform: uppercase;
-      letter-spacing: 0.04em;
-      padding: 0.25rem 0.6rem;
-      border-radius: 6px;
-      font-weight: 600;
+      letter-spacing: 0.05em;
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-weight: 700;
       white-space: nowrap;
     }
-    .badge.pending { background: #334155; color: #cbd5e1; }
-    .badge.approved { background: #14532d; color: #86efac; }
-    .badge.overridden { background: #713f12; color: #fcd34d; }
+    .badge.pending { background: rgba(51, 65, 85, 0.5); color: #cbd5e1; border: 1px solid rgba(203, 213, 225, 0.1); }
+    .badge.approved { background: rgba(20, 83, 45, 0.5); color: #86efac; border: 1px solid rgba(134, 239, 172, 0.1); }
+    .badge.overridden { background: rgba(113, 63, 18, 0.5); color: #fcd34d; border: 1px solid rgba(252, 211, 77, 0.1); }
     .grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1rem;
+      gap: 1.5rem;
     }
-    @media (max-width: 800px) { .grid { grid-template-columns: 1fr; } }
+    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
     .page-img {
       width: 100%;
-      border-radius: 8px;
+      border-radius: 10px;
       border: 1px solid var(--border);
       background: #000;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
     }
     .answer-box {
-      background: var(--bg);
+      background: rgba(0,0,0,0.25);
       border: 1px solid var(--border);
       border-radius: 8px;
-      padding: 0.75rem;
-      font-size: 0.9rem;
+      padding: 1rem;
+      font-size: 0.95rem;
       white-space: pre-wrap;
       min-height: 4rem;
+      color: #e2e8f0;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
     }
-    .marks { font-size: 1.25rem; margin: 0.5rem 0; }
-    .marks span { color: var(--muted); font-size: 0.9rem; }
-    ul { margin: 0.35rem 0; padding-left: 1.25rem; }
-    li { margin: 0.25rem 0; color: var(--muted); }
+    .marks { font-size: 1.35rem; margin: 1rem 0; font-weight: 500; }
+    .marks span { color: var(--muted); font-size: 0.95rem; font-weight: 400; }
+    .marks strong { color: #fff; }
+    .marks .final-marks { color: var(--success); font-weight: 700; font-size: 1.5rem; }
+    ul { margin: 0.5rem 0; padding-left: 1.5rem; }
+    li { margin: 0.35rem 0; color: #cbd5e1; font-size: 0.95rem; }
     .actions {
       display: flex;
       flex-wrap: wrap;
       align-items: center;
-      gap: 0.75rem;
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border);
+      gap: 1rem;
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,0.05);
     }
-    .btn {
-      border: none;
-      border-radius: 6px;
-      padding: 0.45rem 0.9rem;
-      cursor: pointer;
-      font-weight: 500;
-    }
-    .btn-approve { background: var(--success); color: #052e16; }
-    .btn-save { background: var(--accent); color: #fff; }
+    .btn-approve { background: var(--success); color: #fff; }
+    .btn-approve:hover { background: var(--success-hover); }
+    .override { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; font-weight: 500; }
     .override input {
-      width: 72px;
-      padding: 0.4rem;
-      border-radius: 6px;
+      width: 80px;
+      padding: 0.5rem;
+      border-radius: 8px;
       border: 1px solid var(--border);
-      background: var(--bg);
+      background: rgba(0,0,0,0.2);
       color: var(--text);
+      font-weight: 600;
+      font-family: inherit;
+      text-align: center;
+      transition: all 0.2s;
     }
-    .error, .empty {
-      color: var(--danger);
-      padding: 1rem;
+    .override input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(59,130,246,0.15); }
+    .error, .empty { color: var(--danger); padding: 1.5rem; background: rgba(239, 68, 68, 0.1); border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); }
+    .loading { color: var(--accent); padding: 1.5rem; font-weight: 500; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+    .shortcut-hint {
+      font-size: 0.7rem;
+      color: var(--muted);
+      background: rgba(255,255,255,0.1);
+      padding: 0.1rem 0.3rem;
+      border-radius: 4px;
+      margin-left: 0.4rem;
+      border: 1px solid rgba(255,255,255,0.05);
     }
-    .loading { color: var(--muted); }
+    .flash { animation: flash-bg 0.4s ease-out; }
+    @keyframes flash-bg { 0% { background-color: rgba(16, 185, 129, 0.2); transform: scale(1.02); } 100% { background-color: var(--surface); transform: scale(1); } }
   </style>
 </head>
 <body>
@@ -400,14 +446,15 @@
         return;
       }
 
-      container.innerHTML = items.map((q) => {
+      container.innerHTML = items.map((q, i) => {
         const page = q.page_number || 1;
         const imgUrl = `${API}/files/${fileId}/page_${page}.png`;
         const just = (q.justification || []).map((j) => `<li>${escapeHtml(j)}</li>`).join("");
         const miss = (q.missing_points || []).map((m) => `<li>${escapeHtml(m)}</li>`).join("");
 
+        const isActive = window.__activeIndex === i;
         return `
-          <article class="card" data-question-id="${escapeHtml(q.question_id)}">
+          <article class="card ${isActive ? 'active' : ''}" data-index="${i}" data-question-id="${escapeHtml(q.question_id)}" id="card-${i}">
             <div class="card-header">
               <h2 class="q-title">${escapeHtml(q.question_id)}: ${escapeHtml(q.question_text)}</h2>
               <span class="badge ${q.status}">${q.status}</span>
@@ -427,12 +474,12 @@
               </div>
             </div>
             <div class="actions">
-              <button type="button" class="btn btn-approve" data-action="approve">Approve (use AI marks)</button>
+              <button type="button" class="btn btn-approve" data-action="approve">Approve (use AI marks) <span class="shortcut-hint">a</span></button>
               <label class="override">
-                Override marks:
+                Override marks <span class="shortcut-hint">o</span>:
                 <input type="number" min="0" max="${q.max_marks}" value="${q.final_marks}" class="override-input" />
               </label>
-              <button type="button" class="btn btn-save" data-action="override">Save override</button>
+              <button type="button" class="btn btn-save" data-action="override">Save override <span class="shortcut-hint">Enter</span></button>
             </div>
           </article>
         `;
@@ -516,9 +563,12 @@
         if (!res.ok) throw new Error(data.error || res.statusText);
 
         window.__results = data;
+        if (window.__activeIndex === undefined) window.__activeIndex = 0;
+        else if (window.__activeIndex >= data.length) window.__activeIndex = Math.max(0, data.length - 1);
         updateSummary(data);
         renderList(data, fileId);
         statusEl.textContent = "";
+        scrollToActive();
       } catch (err) {
         statusEl.textContent = err.message;
         statusEl.className = "error";
@@ -552,6 +602,84 @@
     });
 
     document.getElementById("load-btn").addEventListener("click", loadResults);
+
+    // Focus / Active Card Management
+    function setActiveIndex(newIndex) {
+      if (!window.__results || window.__results.length === 0) return;
+      if (newIndex < 0) newIndex = 0;
+      if (newIndex >= window.__results.length) newIndex = window.__results.length - 1;
+      
+      const oldCard = document.getElementById(`card-${window.__activeIndex}`);
+      if (oldCard) oldCard.classList.remove('active');
+      
+      window.__activeIndex = newIndex;
+      const newCard = document.getElementById(`card-${window.__activeIndex}`);
+      if (newCard) newCard.classList.add('active');
+      scrollToActive();
+    }
+
+    function scrollToActive() {
+      if (window.__activeIndex === undefined) return;
+      const card = document.getElementById(`card-${window.__activeIndex}`);
+      if (card) {
+        const rect = card.getBoundingClientRect();
+        const isInViewport = (
+          rect.top >= 0 &&
+          rect.left >= 0 &&
+          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+          rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+        if (!isInViewport) {
+          card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }
+    }
+
+    // Keyboard Shortcuts
+    document.addEventListener("keydown", (e) => {
+      // Don't trigger shortcuts if user is typing in a non-override input
+      if (e.target.tagName === 'INPUT' && !e.target.classList.contains('override-input')) return;
+
+      if (!window.__results || window.__results.length === 0) return;
+
+      const activeCard = document.getElementById(`card-${window.__activeIndex}`);
+      if (!activeCard) return;
+
+      const overrideInput = activeCard.querySelector('.override-input');
+      const isInputFocused = document.activeElement === overrideInput;
+
+      if (e.key === 'j' || e.key === 'ArrowDown') {
+        if (isInputFocused) return;
+        e.preventDefault();
+        setActiveIndex(window.__activeIndex + 1);
+      } else if (e.key === 'k' || e.key === 'ArrowUp') {
+        if (isInputFocused) return;
+        e.preventDefault();
+        setActiveIndex(window.__activeIndex - 1);
+      } else if (e.key === 'a' && !isInputFocused) {
+        e.preventDefault();
+        activeCard.classList.add('flash');
+        const approveBtn = activeCard.querySelector('[data-action="approve"]');
+        if (approveBtn) {
+           window.__activeIndex++;
+           approveBtn.click();
+        }
+      } else if (e.key === 'o' && !isInputFocused) {
+        e.preventDefault();
+        overrideInput.focus();
+        overrideInput.select();
+      } else if (e.key === 'Enter' && isInputFocused) {
+        e.preventDefault();
+        activeCard.classList.add('flash');
+        const saveBtn = activeCard.querySelector('[data-action="override"]');
+        if (saveBtn) {
+            overrideInput.blur();
+            window.__activeIndex++;
+            saveBtn.click();
+        }
+      }
+    });
+
     initFromQuery();
   </script>
 </body>
